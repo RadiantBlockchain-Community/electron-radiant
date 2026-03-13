@@ -37,19 +37,10 @@ set -e
 
 info "Using docker: $docker_version"
 
-# Only set SUDO if its not been set already
-if [ -z ${SUDO+x} ] ; then
-    SUDO=""  # on macOS (and others?) we don't do sudo for the docker commands ...
-    if [ $(uname) = "Linux" ]; then
-        # .. on Linux we do
-        SUDO="sudo"
-    fi
-fi
-
 DOCKER_SUFFIX=ub2004
 
 info "Creating docker image ..."
-$SUDO docker build -t electronradiant-appimage-builder-img-$DOCKER_SUFFIX \
+docker build -t electronradiant-appimage-builder-img-$DOCKER_SUFFIX \
     -f contrib/build-linux/appimage/Dockerfile_$DOCKER_SUFFIX \
     --build-arg UBUNTU_MIRROR=$UBUNTU_MIRROR \
     contrib/build-linux/appimage \
@@ -62,7 +53,7 @@ FRESH_CLONE=`pwd`/contrib/build-linux/fresh_clone
 FRESH_CLONE_DIR=$FRESH_CLONE/$GIT_DIR_NAME
 
 (
-    $SUDO rm -fr $FRESH_CLONE && \
+    rm -rf $FRESH_CLONE && \
         mkdir -p $FRESH_CLONE && \
         cd $FRESH_CLONE  && \
         git clone $GIT_REPO && \
@@ -75,7 +66,7 @@ mkdir "$FRESH_CLONE_DIR/contrib/build-linux/home" || fail "Failed to create home
 (
     # NOTE: We propagate forward the GIT_REPO override to the container's env,
     # just in case it needs to see it.
-    $SUDO docker run $DOCKER_RUN_TTY \
+    docker run $DOCKER_RUN_TTY \
     -e HOME="/opt/electronradiant/contrib/build-linux/home" \
     -e GIT_REPO="$GIT_REPO" \
     -e BUILD_DEBUG="$BUILD_DEBUG" \

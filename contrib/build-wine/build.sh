@@ -37,15 +37,6 @@ set -e
 
 info "Using docker: $docker_version"
 
-# Only set SUDO if its not been set already
-if [ -z ${SUDO+x} ] ; then
-    SUDO=""  # on macOS (and others?) we don't do sudo for the docker commands ...
-    if [ $(uname) = "Linux" ]; then
-        # .. on Linux we do
-        SUDO="sudo"
-    fi
-fi
-
 USER_ID=$(id -u $USER)
 GROUP_ID=$(id -g $USER)
 
@@ -55,7 +46,7 @@ GROUP_ID=$(id -g $USER)
 IMGNAME="ec-wine-builder-img_${USER_ID}_${GROUP_ID}"
 
 info "Creating docker image ..."
-$SUDO docker build -t $IMGNAME \
+docker build -t $IMGNAME \
             --build-arg USER_ID=$USER_ID \
             --build-arg GROUP_ID=$GROUP_ID \
             --build-arg UBUNTU_MIRROR=$UBUNTU_MIRROR \
@@ -78,7 +69,7 @@ FRESH_CLONE_DIR="$FRESH_CLONE/$GIT_DIR_NAME"
         fi
         chmod -R u+rw "$FRESH_CLONE" 2>/dev/null || true
     fi
-    $SUDO rm -fr "$FRESH_CLONE" && \
+    rm -rf "$FRESH_CLONE" && \
         mkdir -p "$FRESH_CLONE" && \
         cd "$FRESH_CLONE"  && \
         git clone "$GIT_REPO" && \
@@ -90,7 +81,7 @@ FRESH_CLONE_DIR="$FRESH_CLONE/$GIT_DIR_NAME"
 (
     # NOTE: We propagate forward the GIT_REPO override to the container's env,
     # just in case it needs to see it.
-    $SUDO docker run $DOCKER_RUN_TTY \
+    docker run $DOCKER_RUN_TTY \
     -u $USER_ID:$GROUP_ID \
     -e GIT_REPO="$GIT_REPO" \
     -e BUILD_DEBUG="$BUILD_DEBUG" \
@@ -116,7 +107,7 @@ for f in $files; do
 done
 
 info "Removing $FRESH_CLONE ..."
-$SUDO rm -fr "$FRESH_CLONE"
+rm -rf "$FRESH_CLONE"
 
 echo ""
 info "Done. Built .exe files have been placed in dist/"
