@@ -37,6 +37,7 @@ def _read_json_dict(filename):
 
 class AbstractNet:
     TESTNET = False
+    REGTEST = False
     LEGACY_POW_TARGET_TIMESPAN = 14 * 24 * 60 * 60   # 2 weeks
     LEGACY_POW_TARGET_INTERVAL = 10 * 60  # 10 minutes
     LEGACY_POW_RETARGET_BLOCKS = LEGACY_POW_TARGET_TIMESPAN // LEGACY_POW_TARGET_INTERVAL  # 2016 blocks
@@ -49,10 +50,10 @@ class MainNet(AbstractNet):
     WIF_PREFIX = 0x80
     ADDRTYPE_P2PKH = 0
     ADDRTYPE_P2SH = 5
-    CASHADDR_PREFIX = "bitcoincash"
+    CASHADDR_PREFIX = "radaddr"
     RPA_PREFIX = "paycode"
     HEADERS_URL = "http://bitcoincash.com/files/blockchain_headers"  # Unused
-    GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+    GENESIS = "0000000065d8ed5d8be28d6876b3ffb660ac2a6c0ca59e437e1f7a6f4e003fb4"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
     DEFAULT_SERVERS = _read_json_dict('servers.json')  # DO NOT MODIFY IN CLIENT CODE
     TITLE = 'Electron Radiant'
@@ -179,6 +180,21 @@ class ScaleNet(TestNet):
     asert_daa = ASERTDaa(is_testnet=False)  # Despite being a "testnet", ScaleNet uses 2d half-life
     asert_daa.anchor = None  # Intentionally not specified because it's after checkpoint; blockchain.py will calculate
 
+class RegtestNet(TestNet):
+    GENESIS = "000000002008a2f4a76b850a838ae084994c200dc2fd354f73102298fe063a91"
+    TITLE = 'Electron Radiant Regtest'
+    CASHADDR_PREFIX = "radreg"
+    REGTEST = True
+
+    BITCOIN_CASH_FORK_BLOCK_HEIGHT = 0
+    BITCOIN_CASH_FORK_BLOCK_HASH = GENESIS
+
+    VERIFICATION_BLOCK_HEIGHT = 100
+    VERIFICATION_BLOCK_MERKLE_ROOT = None
+    asert_daa = ASERTDaa(is_testnet=True)  # not used on regtest
+
+    DEFAULT_SERVERS = _read_json_dict('servers_regtest.json')  # DO NOT MODIFY IN CLIENT CODE
+
 
 # All new code should access this to get the current network config.
 net = MainNet
@@ -212,6 +228,11 @@ def set_testnet4():
 def set_scalenet():
     global net
     net = ScaleNet
+    _set_units()
+
+def set_regtest():
+    global net
+    net = RegtestNet
     _set_units()
 
 
